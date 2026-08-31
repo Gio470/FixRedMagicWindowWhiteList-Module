@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Fix RedMagic Window WhiteList</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    /* Material 3 tonal palette (vivid spring-green seed), light scheme */
+    --md-primary: #006C46;
+    --md-on-primary: #ffffff;
+    --md-primary-container: #4CFFA8;
+    --md-on-primary-container: #002110;
+
+    --md-secondary: #4D6357;
+    --md-on-secondary: #ffffff;
+    --md-secondary-container: #CFE9D7;
+    --md-on-secondary-container: #0A1F15;
+
+    --md-tertiary: #3D6472;
+    --md-on-tertiary: #ffffff;
+    --md-tertiary-container: #C0E9F9;
+    --md-on-tertiary-container: #001F29;
+
+    --md-error: #BA1A1A;
+    --md-on-error: #ffffff;
+    --md-error-container: #FFDAD6;
+    --md-on-error-container: #410002;
+
+    --md-surface: #F4FBF3;
+    --md-surface-container-lowest: #ffffff;
+    --md-surface-container-low: #EEF7EC;
+    --md-surface-container: #E8F2E5;
+    --md-surface-container-high: #E2ECDF;
+    --md-surface-container-highest: #DCE7D9;
+    --md-on-surface: #161D18;
+    --md-on-surface-variant: #404943;
+    --md-outline: #707972;
+    --md-outline-variant: #BFC9C0;
+
+    /* Extended tonal palette for app avatars — no real icon is available, so
+       these need to be visually distinct from each other (8 hues instead of
+       reusing just the 3 semantic M3 roles above, which repeated too often). */
+    --avatar-1-bg: #EADDFF; --avatar-1-fg: #21005D; /* violet */
+    --avatar-2-bg: #D8E2FF; --avatar-2-fg: #001A41; /* blue */
+    --avatar-3-bg: #B6ECE1; --avatar-3-fg: #00201A; /* teal */
+    --avatar-4-bg: #C4EED0; --avatar-4-fg: #0B3818; /* green */
+    --avatar-5-bg: #FFDF9E; --avatar-5-fg: #402D00; /* amber */
+    --avatar-6-bg: #FFDCC2; --avatar-6-fg: #341100; /* orange */
+    --avatar-7-bg: #FFD8E4; --avatar-7-fg: #31111D; /* pink */
+    --avatar-8-bg: #FFDAD6; --avatar-8-fg: #410002; /* red */
+
+    --shape-xs: 8px;
+    --shape-sm: 12px;
+    --shape-md: 16px;
+    --shape-lg: 20px;
+    --shape-xl: 28px;
+    --shape-full: 999px;
+    --m3-easing: cubic-bezier(.2,0,0,1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* dark scheme tuned to match a near-black green keyboard w/ spring-green accent */
+      --md-primary: #4CFFA8;
+      --md-on-primary: #00391F;
+      --md-primary-container: #00522F;
+      --md-on-primary-container: #7BFFBE;
+
+      --md-secondary: #B3D9C1;
+      --md-on-secondary: #1F352A;
+      --md-secondary-container: #354B3F;
+      --md-on-secondary-container: #CFE9D7;
+
+      --md-tertiary: #A3D4E4;
+      --md-on-tertiary: #033641;
+      --md-tertiary-container: #204C59;
+      --md-on-tertiary-container: #C0E9F9;
+
+      --md-error: #FFB4AB;
+      --md-on-error: #690005;
+      --md-error-container: #93000A;
+      --md-on-error-container: #FFDAD6;
+
+      /* very dark, slightly desaturated green-black — matches the keyboard bg */
+      --md-surface: #071009;
+      --md-surface-container-lowest: #030904;
+      --md-surface-container-low: #0C150E;
+      --md-surface-container: #0F1A11;
+      --md-surface-container-high: #152016;
+      --md-surface-container-highest: #1C2A1E;
+      --md-on-surface: #DCE7D9;
+      --md-on-surface-variant: #A8B8AC;
+      --md-outline: #5F6E63;
+      --md-outline-variant: #2B3A2E;
+
+      --avatar-1-bg: #4F378B; --avatar-1-fg: #EADDFF;
+      --avatar-2-bg: #2E4578; --avatar-2-fg: #D8E2FF;
+      --avatar-3-bg: #1C4A40; --avatar-3-fg: #B6ECE1;
+      --avatar-4-bg: #1E4620; --avatar-4-fg: #C4EED0;
+      --avatar-5-bg: #4A3800; --avatar-5-fg: #FFDF9E;
+      --avatar-6-bg: #4E2600; --avatar-6-fg: #FFDCC2;
+      --avatar-7-bg: #633B48; --avatar-7-fg: #FFD8E4;
+      --avatar-8-bg: #93000A; --avatar-8-fg: #FFDAD6;
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--md-surface);
+    color: var(--md-on-surface);
+    font-family: "Google Sans", Roboto, -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  svg.icon { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; display: block; }
+
+  header {
+    padding: 20px 16px 12px;
+    position: sticky; top: 0; z-index: 5;
+    background: var(--md-surface);
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    margin: 0 0 4px;
+    color: var(--md-on-surface);
+  }
+  .subtitle {
+    color: var(--md-on-surface-variant);
+    font-size: 13px;
+    line-height: 1.45;
+    margin: 0 0 16px;
+  }
+  .subtitle code {
+    background: var(--md-surface-container-high);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: var(--shape-full);
+    border: none;
+    background: var(--md-surface-container-high);
+    color: var(--md-on-surface-variant);
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .search-bar svg.icon { color: var(--md-on-surface-variant); }
+  .search-bar input {
+    border: none; outline: none; background: transparent;
+    color: var(--md-on-surface);
+    font-size: 16px;
+    width: 100%;
+    font-family: inherit;
+  }
+
+  .chips { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--shape-full);
+    background: transparent;
+    color: var(--md-on-surface-variant);
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--md-outline-variant);
+    position: relative;
+    overflow: hidden;
+    transition: background .2s var(--m3-easing), color .2s var(--m3-easing), border-color .2s var(--m3-easing), padding .2s var(--m3-easing);
+  }
+  .chip svg.icon { width: 16px; height: 16px; display: none; }
+  .chip.active {
+    background: var(--md-secondary-container);
+    color: var(--md-on-secondary-container);
+    border-color: transparent;
+    padding-left: 12px;
+  }
+  .chip.active svg.icon { display: block; }
+  .chip:active { transform: scale(.95); }
+
+  main { padding: 0 16px 128px; }
+
+  .status {
+    font-size: 12.5px;
+    color: var(--md-on-surface-variant);
+    padding: 2px 4px 12px;
+    line-height: 1.5;
+  }
+  .status.error { color: var(--md-error); }
+  .status.ok { color: #2E7D32; }
+  @media (prefers-color-scheme: dark) { .status.ok { color: #81C995; } }
+
+  ul.list {
+    list-style: none; margin: 0; padding: 4px;
+    border-radius: var(--shape-xl);
+    background: var(--md-surface-container-low);
+    border: 1px solid var(--md-outline-variant);
+  }
+  li.row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 12px;
+    border-radius: var(--shape-md);
+    transition: background .15s var(--m3-easing);
+  }
+  li.row:active { background: var(--md-surface-container-high); }
+
+  label.m3-check {
+    position: relative;
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    display: block;
+  }
+  label.m3-check input {
+    position: absolute; inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  label.m3-check .box {
+    position: absolute; inset: 0;
+    border: 2px solid var(--md-outline);
+    border-radius: 4px;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s var(--m3-easing), border-color .15s var(--m3-easing), transform .15s var(--m3-easing);
+    pointer-events: none;
+  }
+  label.m3-check .box svg { width: 14px; height: 14px; fill: var(--md-on-primary); opacity: 0; transform: scale(.4); transition: opacity .1s, transform .15s var(--m3-easing); }
+  label.m3-check input:checked ~ .box {
+    background: var(--md-primary);
+    border-color: var(--md-primary);
+  }
+  label.m3-check input:checked ~ .box svg { opacity: 1; transform: scale(1); }
+  label.m3-check input:active ~ .box { transform: scale(.85); }
+
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: var(--shape-md);
+    flex-shrink: 0;
+    object-fit: cover;
+    background: var(--md-surface-container-high);
+  }
+  .avatar-fallback {
+    width: 40px; height: 40px;
+    border-radius: var(--shape-md);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 0;
+  }
+  .avatar-fallback.c1 { background: var(--avatar-1-bg); color: var(--avatar-1-fg); }
+  .avatar-fallback.c2 { background: var(--avatar-2-bg); color: var(--avatar-2-fg); }
+  .avatar-fallback.c3 { background: var(--avatar-3-bg); color: var(--avatar-3-fg); }
+  .avatar-fallback.c4 { background: var(--avatar-4-bg); color: var(--avatar-4-fg); }
+  .avatar-fallback.c5 { background: var(--avatar-5-bg); color: var(--avatar-5-fg); }
+  .avatar-fallback.c6 { background: var(--avatar-6-bg); color: var(--avatar-6-fg); }
+  .avatar-fallback.c7 { background: var(--avatar-7-bg); color: var(--avatar-7-fg); }
+  .avatar-fallback.c8 { background: var(--avatar-8-bg); color: var(--avatar-8-fg); }
+
+  .textstack { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .apptitle {
+    font-size: 14.5px; font-weight: 600; color: var(--md-on-surface);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pkgname { font-family: ui-monospace, "SFMono-Regular", monospace; font-size: 11.5px; word-break: break-all; color: var(--md-on-surface-variant); }
+  .pkgname.apptitle-fallback { font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--md-on-surface); }
+  .badge {
+    display: inline-flex; align-items: center;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--md-on-tertiary-container);
+    background: var(--md-tertiary-container);
+    border-radius: var(--shape-full);
+    padding: 3px 9px;
+    flex-shrink: 0;
+  }
+  .empty { padding: 32px 12px; text-align: center; color: var(--md-on-surface-variant); font-size: 13px; }
+
+  .count { color: var(--md-on-surface-variant); font-size: 12px; margin: 2px 0 10px; font-weight: 500; }
+
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    background: var(--md-surface-container);
+    border-top: 1px solid var(--md-outline-variant);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .btn {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--shape-lg);
+    background: var(--md-surface-container-high);
+    color: var(--md-on-surface-variant);
+    flex-shrink: 0;
+    transition: background .15s var(--m3-easing);
+  }
+  .btn-icon.danger { color: var(--md-error); }
+  .btn-icon:disabled { opacity: .35; }
+
+  .btn-fab {
+    flex: 1;
+    height: 56px;
+    border-radius: var(--shape-lg);
+    background: var(--md-primary-container);
+    color: var(--md-on-primary-container);
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15), 0 1px 2px rgba(0,0,0,.1);
+    transition: background .15s var(--m3-easing);
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .25;
+    transform: scale(0);
+    animation: ripple .5s var(--m3-easing);
+    pointer-events: none;
+  }
+  @keyframes ripple {
+    to { transform: scale(1); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fix RedMagic Window WhiteList</h1>
+  <p class="subtitle">Pick which apps get the floating-window reply (<code>forceSupport_whiteList</code>). Changes are written to the module's copy of <code>zte_windowReply_control.xml</code> and usually take effect immediately (reboot if not).</p>
+
+  <div class="search-bar">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5L20.49 19l-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+    <input id="search" type="text" placeholder="Search package name…" />
+  </div>
+
+  <div class="chips" id="filterChips">
+    <button class="chip active" data-mode="user"><svg class="icon" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>User apps</button>
+    <button class="chip" data-mode="system"><svg class="icon" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>System apps</button>
+    <button class="chip" data-mode="all"><svg class="icon" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>All</button>
+    <button class="chip" data-mode="whitelisted"><svg class="icon" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>Whitelisted only</button>
+  </div>
+</header>
+
+<main>
+  <div class="count" id="count"></div>
+  <div class="status" id="status">Loading…</div>
+  <ul class="list" id="list"></ul>
+</main>
+
+<footer>
+  <button class="btn btn-icon danger" id="restoreBtn" title="Restore the original file shipped with this module">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3z"/></svg>
+  </button>
+  <button class="btn btn-fab" id="saveBtn">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H6V5h9v4z"/></svg>
+    Save changes
+  </button>
+  <button class="btn btn-icon" id="rebootBtn" disabled title="Reboot">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17-1.42 1.42A6.92 6.92 0 0 1 19 12a7 7 0 1 1-11.83-5.41L5.76 5.17A9 9 0 1 0 18.24 5.17z"/></svg>
+  </button>
+</footer>
+
+<script>
+(function () {
+  var MODULE_ID = "windowreplyfix";
+  var MOD_DIR = "/data/adb/modules/" + MODULE_ID;
+  var FILE = MOD_DIR + "/system/etc/zte_windowReply_control.xml";
+  var BAK = FILE + ".bak";
+  var POLICY_NAME = "forceSupport_whiteList";
+
+  var state = new Map();      // pkg -> boolean (desired whitelist membership)
+  var originalSet = new Set(); // pkg set as read from file at load time
+  var installedUser = [];
+  var installedSystem = [];
+  var mode = "user";
+  var searchTerm = "";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var statusEl = $("status");
+  var listEl = $("list");
+  var countEl = $("count");
+
+  function addRipple(el) {
+    el.addEventListener("pointerdown", function (e) {
+      var rect = el.getBoundingClientRect();
+      var span = document.createElement("span");
+      span.className = "ripple";
+      var size = Math.max(rect.width, rect.height) * 1.6;
+      span.style.width = span.style.height = size + "px";
+      span.style.left = (e.clientX - rect.left - size / 2) + "px";
+      span.style.top = (e.clientY - rect.top - size / 2) + "px";
+      el.appendChild(span);
+      span.addEventListener("animationend", function () { span.remove(); });
+    });
+  }
+
+  function setStatus(msg, cls) {
+    statusEl.textContent = msg;
+    statusEl.className = "status" + (cls ? " " + cls : "");
+  }
+
+  function hasBridge() {
+    return typeof window.ksu !== "undefined" && typeof window.ksu.exec === "function";
+  }
+
+  // Some managers' exec() returns a raw stdout string synchronously; others
+  // return a JSON envelope like {"errno":0,"stdout":"...","stderr":"..."}.
+  // Only unwrap it if it actually looks like that envelope, so real command
+  // output that happens to start with "{" (unlikely here) is left alone.
+  function unwrapExecResult(s) {
+    if (typeof s !== "string") return s;
+    var t = s.trim();
+    if (t.charAt(0) === "{") {
+      try {
+        var obj = JSON.parse(t);
+        if (obj && typeof obj === "object" && typeof obj.stdout === "string") {
+          return (obj.errno === 0 || obj.errno == null) ? obj.stdout : null;
+        }
+      } catch (e) { /* not an envelope, treat as raw stdout */ }
+    }
+    return s;
+  }
+
+  // Different root-shell managers expose ksu.exec() differently: some return
+  // stdout synchronously, others are fire-and-forget and deliver the result
+  // async via a named global callback (errno, stdout, stderr). Support both.
+  function shell(cmd) {
+    return new Promise(function (resolve) {
+      if (!hasBridge()) { resolve(null); return; }
+      var settled = false;
+      var cbName = "__exec_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+      var finish = function (val) {
+        if (settled) return;
+        settled = true;
+        try { delete window[cbName]; } catch (e) {}
+        resolve(val);
+      };
+      window[cbName] = function (errno, stdout, stderr) {
+        finish((errno === 0 || errno === undefined || errno === null) ? (stdout != null ? stdout : "") : null);
+      };
+      var syncRet;
+      try {
+        syncRet = window.ksu.exec(cmd, "{}", cbName);
+      } catch (e) {
+        try { syncRet = window.ksu.exec(cmd); } catch (e2) { finish(null); return; }
+      }
+      if (typeof syncRet === "string") {
+        finish(unwrapExecResult(syncRet));
+        return;
+      }
+      setTimeout(function () { finish(null); }, 5000);
+    });
+  }
+
+  // WebUI X (MMRL) exposes a real Android PackageManager bridge that plain
+  // KernelSU Manager / APatch don't have. Use it for icons/labels when present;
+  // everything else in this app works fine without it (falls back to letter avatars).
+  var pmApi = null;
+  try {
+    if (typeof global !== "undefined" && typeof global.require === "function") {
+      pmApi = global.require("wx:pm") || null;
+    }
+  } catch (e) { pmApi = null; }
+
+  var metaCache = new Map();
+  function getAppMeta(pkg) {
+    if (metaCache.has(pkg)) return metaCache.get(pkg);
+    var meta = { label: null, icon: null };
+    if (pmApi) {
+      try {
+        var infoJson = pmApi.getApplicationInfo(pkg);
+        if (infoJson) {
+          var info = JSON.parse(infoJson);
+          if (info && (info.label || info.nonLocalizedLabel)) {
+            meta.label = info.label || info.nonLocalizedLabel;
+          }
+        }
+      } catch (e) {}
+      try {
+        var iconB64 = pmApi.getApplicationIcon(pkg);
+        if (iconB64) meta.icon = "data:image/png;base64," + iconB64;
+      } catch (e) {}
+    }
+    metaCache.set(pkg, meta);
+    return meta;
+  }
+
+  function avatarColorClass(pkg) {
+    var h = 0;
+    for (var i = 0; i < pkg.length; i++) h = (h * 31 + pkg.charCodeAt(i)) >>> 0;
+    return "c" + (h % 8 + 1);
+  }
+
+  // Package names are dot-segments like "com.discord" or "org.telegram.messenger" —
+  // the first segment (com/org/net/cn/jp/io...) is almost never the identifying
+  // part, so using pkg.charAt(0) meant most avatars just showed "C". Use the
+  // segment that actually names the app/company instead, and take up to 2 chars
+  // from it so avatars read more like initials than a single arbitrary letter.
+  var GENERIC_TLD_SEGMENTS = { com: 1, org: 1, net: 1, io: 1, co: 1, cn: 1, jp: 1, de: 1, edu: 1, gov: 1, app: 1 };
+  function avatarLetters(pkg, label) {
+    if (label) return label.trim().slice(0, 2);
+    var segs = pkg.split(".").filter(Boolean);
+    var seg = segs[0] || pkg;
+    if (segs.length > 1 && GENERIC_TLD_SEGMENTS[segs[0].toLowerCase()]) {
+      seg = segs[1];
+    }
+    if (!seg) seg = pkg;
+    var letters = seg.slice(0, 2);
+    return letters.charAt(0).toUpperCase() + letters.slice(1).toLowerCase();
+  }
+
+  function b64EncodeUtf8(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  function utf8ByteLength(str) {
+    return unescape(encodeURIComponent(str)).length;
+  }
+
+  // Writes `content` to `path` defensively. This exec bridge does not seem to
+  // serialize consecutive calls reliably: appending chunks to one shared temp
+  // file with `>>` produced a file with the right byte count but garbled
+  // content (classic concurrent-write interleaving). To make that impossible,
+  // each chunk is written to its OWN temp file (no shared file, so no
+  // interleaving is possible), then concatenated in one explicit, ordered
+  // command. The result is decoded to a temp file, byte-count and XML-parse
+  // verified, and only then atomically moved over the real path — the live
+  // file is never touched unless verification passes.
+  async function writeFileAtomic(path, content) {
+    var b64 = b64EncodeUtf8(content);
+    var expectedBytes = utf8ByteLength(content);
+    var tmpB64 = path + ".b64.tmp";
+    var tmpOut = path + ".new.tmp";
+    var partPrefix = path + ".b64.part";
+
+    var cleanup = function () {
+      return shell("rm -f " + partPrefix + "* '" + tmpB64 + "' '" + tmpOut + "'");
+    };
+
+    await cleanup();
+
+    var CHUNK = 800;
+    var parts = [];
+    for (var i = 0, n = 0; i < b64.length; i += CHUNK, n++) {
+      var piece = b64.slice(i, i + CHUNK);
+      var partPath = partPrefix + n;
+      var r = await shell("printf '%s' '" + piece + "' > '" + partPath + "' && echo OK");
+      if (!r || r.indexOf("OK") === -1) {
+        await cleanup();
+        throw new Error("write failed at chunk " + (n + 1));
+      }
+      parts.push(partPath);
+    }
+
+    var catCmd = parts.length
+      ? "cat " + parts.map(function (p) { return "'" + p + "'"; }).join(" ") + " > '" + tmpB64 + "'"
+      : ": > '" + tmpB64 + "'";
+
+    var decodeResult = await shell(
+      catCmd + " && rm -f " + partPrefix + "* && base64 -d '" + tmpB64 + "' > '" + tmpOut + "' 2>/dev/null && rm -f '" + tmpB64 + "' && wc -c < '" + tmpOut + "'"
+    );
+    var actualBytes = decodeResult ? parseInt(decodeResult.trim(), 10) : NaN;
+    if (!decodeResult || isNaN(actualBytes) || actualBytes !== expectedBytes) {
+      await cleanup();
+      throw new Error("verification failed: expected " + expectedBytes + " bytes on disk, got " + (isNaN(actualBytes) ? "none" : actualBytes));
+    }
+
+    var readBackRaw = await shell("cat '" + tmpOut + "'");
+    // wc -c already proved the on-disk byte count is exact; some exec bridges
+    // still tack on a trailing newline when relaying captured stdout back to
+    // JS, which isn't a real file difference — strip at most one before comparing.
+    var readBack = (readBackRaw || "").replace(/\n$/, "") === content
+      ? content
+      : readBackRaw;
+    if (readBack !== content) {
+      var a = content, b = readBack || "";
+      var len = Math.min(a.length, b.length);
+      var idx = 0;
+      while (idx < len && a[idx] === b[idx]) idx++;
+      var ctx = 24;
+      var expectedCtx = a.slice(Math.max(0, idx - ctx), idx + ctx);
+      var actualCtx = b.slice(Math.max(0, idx - ctx), idx + ctx);
+      await shell("rm -f '" + tmpOut + "'");
+      throw new Error(
+        "content mismatch despite matching byte count — diverges at offset " + idx +
+        " of " + a.length + ". expected: " + JSON.stringify(expectedCtx) +
+        " | got: " + JSON.stringify(actualCtx)
+      );
+    }
+    var parsed = parseWhitelistXml(readBack);
+    if (!parsed.ok) {
+      await shell("rm -f '" + tmpOut + "'");
+      throw new Error("verification failed: written file did not parse (" + parsed.error + ")");
+    }
+
+    // `mv` replaces the destination's inode entirely, and the newly-created
+    // inode doesn't inherit the original file's SELinux label or mode — that's
+    // what was actually breaking this the whole time (a chmod/restorecon call
+    // issued right after was supposed to fix it back up, but proved unreliable
+    // through this exec bridge). Writing directly INTO the existing file via
+    // shell redirection instead truncates-and-rewrites the SAME inode, so its
+    // permissions and SELinux context never change — nothing to fix up, and
+    // nothing that can silently fail to get fixed up.
+    var commitResult = await shell("cat '" + tmpOut + "' > '" + path + "' && rm -f '" + tmpOut + "' && echo OK");
+    if (!commitResult || commitResult.indexOf("OK") === -1) {
+      throw new Error("failed to write verified content into the existing file");
+    }
+
+    var ctxCheck = await shell("ls -Z '" + path + "' 2>/dev/null || stat -c '%C' '" + path + "' 2>/dev/null");
+    var contextOk = !!(ctxCheck && ctxCheck.indexOf("system_file") !== -1);
+
+    return { set: parsed.set, contextOk: contextOk, contextRaw: (ctxCheck || "").trim() };
+  }
+
+  function parsePmList(raw) {
+    if (!raw) return [];
+    return raw.split("\n")
+      .map(function (l) { return l.replace(/^package:/, "").trim(); })
+      .filter(Boolean)
+      .sort();
+  }
+
+  async function loadInstalled() {
+    installedUser = parsePmList(await shell("pm list packages -3"));
+    installedSystem = parsePmList(await shell("pm list packages -s"));
+  }
+
+  function parseWhitelistXml(xml) {
+    // returns { ok, set, doc, error }
+    if (!xml || xml.indexOf("<") === -1) {
+      return { ok: false, set: new Set(), doc: null, error: "no XML content read from file" };
+    }
+    var doc = new DOMParser().parseFromString(xml, "text/xml");
+    if (doc.getElementsByTagName("parsererror").length) {
+      return { ok: false, set: new Set(), doc: null, error: "file did not parse as valid XML" };
+    }
+    var set = new Set();
+    var policies = doc.getElementsByTagName("policy");
+    var found = false;
+    for (var i = 0; i < policies.length; i++) {
+      if (policies[i].getAttribute("name") === POLICY_NAME) {
+        found = true;
+        var items = policies[i].getElementsByTagName("item");
+        for (var j = 0; j < items.length; j++) {
+          var pkg = items[j].getAttribute("package");
+          if (pkg) set.add(pkg.trim());
+        }
+      }
+    }
+    if (!found) {
+      return { ok: false, set: new Set(), doc: doc, error: "policy '" + POLICY_NAME + "' not found in file" };
+    }
+    return { ok: true, set: set, doc: doc, error: null };
+  }
+
+  async function readWhitelist() {
+    var xml = await shell("cat '" + FILE + "'");
+    var parsed = parseWhitelistXml(xml);
+    originalSet = parsed.set;
+    return parsed.ok ? true : parsed.error;
+  }
+
+  function initState() {
+    state = new Map();
+    originalSet.forEach(function (pkg) { state.set(pkg, true); });
+  }
+
+  function visiblePackages() {
+    var pool;
+    if (mode === "user") pool = installedUser.slice();
+    else if (mode === "system") pool = installedSystem.slice();
+    else if (mode === "whitelisted") pool = Array.from(originalSet);
+    else pool = installedUser.concat(installedSystem);
+
+    // always surface anything the user has toggled on, even if outside current filter
+    state.forEach(function (checked, pkg) {
+      if (checked && pool.indexOf(pkg) === -1) pool.push(pkg);
+    });
+
+    var set = new Set(pool);
+    var arr = Array.from(set).sort();
+    if (searchTerm) {
+      var t = searchTerm.toLowerCase();
+      arr = arr.filter(function (p) {
+        if (p.toLowerCase().indexOf(t) !== -1) return true;
+        var label = getAppMeta(p).label;
+        return !!label && label.toLowerCase().indexOf(t) !== -1;
+      });
+    }
+    return arr;
+  }
+
+  function render() {
+    var pkgs = visiblePackages();
+    countEl.textContent = pkgs.length + " app" + (pkgs.length === 1 ? "" : "s") +
+      " shown — " + Array.from(state.values()).filter(Boolean).length + " whitelisted";
+
+    listEl.innerHTML = "";
+    if (!pkgs.length) {
+      var empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "No apps match.";
+      listEl.appendChild(empty);
+      return;
+    }
+
+    pkgs.forEach(function (pkg) {
+      var li = document.createElement("li");
+      li.className = "row";
+
+      var meta = getAppMeta(pkg);
+      var colorClass = avatarColorClass(pkg);
+      var letters = avatarLetters(pkg, meta.label);
+
+      if (meta.icon) {
+        var img = document.createElement("img");
+        img.className = "avatar";
+        img.src = meta.icon;
+        img.alt = "";
+        img.addEventListener("error", function () {
+          var fb = document.createElement("div");
+          fb.className = "avatar-fallback " + colorClass;
+          fb.textContent = letters;
+          img.replaceWith(fb);
+        });
+        li.appendChild(img);
+      } else {
+        var fallback = document.createElement("div");
+        fallback.className = "avatar-fallback " + colorClass;
+        fallback.textContent = letters;
+        li.appendChild(fallback);
+      }
+
+      var textstack = document.createElement("div");
+      textstack.className = "textstack";
+      if (meta.label) {
+        var title = document.createElement("span");
+        title.className = "apptitle";
+        title.textContent = meta.label;
+        textstack.appendChild(title);
+      }
+      var pkgLine = document.createElement("span");
+      pkgLine.className = "pkgname" + (meta.label ? "" : " apptitle-fallback");
+      pkgLine.textContent = pkg;
+      textstack.appendChild(pkgLine);
+      li.appendChild(textstack);
+
+      if (originalSet.has(pkg)) {
+        var badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = "listed";
+        li.appendChild(badge);
+      }
+
+      var label = document.createElement("label");
+      label.className = "m3-check";
+
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!state.get(pkg);
+      cb.addEventListener("change", function () {
+        state.set(pkg, cb.checked);
+        render();
+      });
+
+      var box = document.createElement("span");
+      box.className = "box";
+      box.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
+
+      label.appendChild(cb);
+      label.appendChild(box);
+      li.appendChild(label);
+
+      listEl.appendChild(li);
+    });
+  }
+
+  function buildNewXml(currentXml, selectedPkgs) {
+    var parsed = parseWhitelistXml(currentXml);
+    if (!parsed.doc) {
+      throw new Error(parsed.error + " (got: " + JSON.stringify(String(currentXml || "").slice(0, 120)) + ")");
+    }
+    var doc = parsed.doc;
+    var policies = doc.getElementsByTagName("policy");
+    var target = null;
+    for (var i = 0; i < policies.length; i++) {
+      if (policies[i].getAttribute("name") === POLICY_NAME) { target = policies[i]; break; }
+    }
+    if (!target) throw new Error("policy '" + POLICY_NAME + "' not found in file");
+
+    while (target.firstChild) target.removeChild(target.firstChild);
+
+    selectedPkgs.sort().forEach(function (pkg) {
+      target.appendChild(doc.createTextNode("\n        "));
+      var item = doc.createElement("item");
+      item.setAttribute("package", pkg);
+      target.appendChild(item);
+    });
+    target.appendChild(doc.createTextNode("\n    "));
+
+    var serialized = new XMLSerializer().serializeToString(doc);
+    // XMLSerializer already re-emits the original document's XML declaration
+    // on this engine — prepending another one produces two declarations,
+    // which is invalid XML ("XML declaration allowed only at the start of
+    // the document"). Only add one if the serializer didn't already.
+    if (serialized.indexOf("<?xml") === 0) return serialized;
+    return "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n" + serialized;
+  }
+
+  async function save() {
+    if (!hasBridge()) {
+      setStatus("No root WebUI bridge available — open this page from KernelSU Manager, APatch, or MMRL/WebUI X.", "error");
+      return;
+    }
+    var btn = $("saveBtn");
+    btn.disabled = true;
+    setStatus("Saving…");
+    try {
+      var currentXml = await shell("cat '" + FILE + "'");
+      if (!currentXml) {
+        setStatus("Could not read " + FILE + " (root shell returned nothing).", "error");
+        return;
+      }
+
+      var selected = [];
+      state.forEach(function (checked, pkg) { if (checked) selected.push(pkg); });
+
+      var newXml;
+      try {
+        newXml = buildNewXml(currentXml, selected);
+      } catch (e) {
+        setStatus("Failed to build XML: " + e.message, "error");
+        return;
+      }
+
+      // sanity-check the in-memory XML before it ever touches the shell, so a
+      // write failure can't be confused with a serialization bug
+      var selfCheck = parseWhitelistXml(newXml);
+      if (!selfCheck.ok) {
+        setStatus("Internal error: generated XML is invalid before writing (" + selfCheck.error + "). This is a bug in the app, not your device — please report it.", "error");
+        return;
+      }
+
+      // back up the original shipped file once, before the first overwrite
+      await shell("[ -f '" + BAK + "' ] || cp '" + FILE + "' '" + BAK + "'");
+
+      try {
+        var writeResult = await writeFileAtomic(FILE, newXml);
+        var contextNote = writeResult.contextOk
+          ? "SELinux context OK."
+          : "WARNING: SELinux context is '" + (writeResult.contextRaw || "unknown") + "', not system_file — the OS may ignore this file. Please report this.";
+        setStatus(
+          "Saved and verified on disk (" + writeResult.set.size + " apps listed). " + contextNote +
+          " Should take effect immediately — reboot if it doesn't.",
+          writeResult.contextOk ? "ok" : "error"
+        );
+        originalSet = writeResult.set;
+        $("rebootBtn").disabled = false;
+        render();
+      } catch (e) {
+        setStatus("Write failed: " + e.message, "error");
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function restore() {
+    if (!hasBridge()) return;
+    setStatus("Restoring…");
+    var exists = await shell("[ -f '" + BAK + "' ] && echo YES");
+    if (!exists || exists.indexOf("YES") === -1) {
+      setStatus("No backup found — nothing to restore.", "error");
+      return;
+    }
+    // Redirection (`>`) truncates-and-rewrites FILE's existing inode instead
+    // of replacing it, so its permissions/SELinux label survive untouched —
+    // see the comment in writeFileAtomic for why this matters.
+    var r = await shell("cat '" + BAK + "' > '" + FILE + "' && echo OK");
+    if (r && r.indexOf("OK") !== -1) {
+      var ctxCheck = await shell("ls -Z '" + FILE + "' 2>/dev/null || stat -c '%C' '" + FILE + "' 2>/dev/null");
+      var contextOk = !!(ctxCheck && ctxCheck.indexOf("system_file") !== -1);
+      setStatus(
+        "Restored original file. " +
+        (contextOk ? "SELinux context OK." : "WARNING: SELinux context is '" + (ctxCheck || "unknown").trim() + "', not system_file.") +
+        " Should take effect immediately — reboot if it doesn't.",
+        contextOk ? "ok" : "error"
+      );
+      await readWhitelist();
+      initState();
+      $("rebootBtn").disabled = false;
+      render();
+    } else {
+      setStatus("Restore failed.", "error");
+    }
+  }
+
+  async function init() {
+    if (!hasBridge()) {
+      setStatus("No root WebUI bridge detected. Open this page from KernelSU Manager, APatch, or MMRL/WebUI X (with Magisk).", "error");
+      render();
+      return;
+    }
+    setStatus("Loading…");
+    await loadInstalled();
+    var result = await readWhitelist();
+    initState();
+    if (result !== true) {
+      setStatus("Warning: " + result + " — showing installed apps only, no items pre-checked.", "error");
+    } else {
+      setStatus("");
+    }
+    render();
+  }
+
+  $("search").addEventListener("input", function (e) {
+    searchTerm = e.target.value;
+    render();
+  });
+
+  Array.prototype.forEach.call($("filterChips").children, function (btn) {
+    addRipple(btn);
+    btn.addEventListener("click", function () {
+      Array.prototype.forEach.call($("filterChips").children, function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      mode = btn.getAttribute("data-mode");
+      render();
+    });
+  });
+
+  addRipple($("saveBtn"));
+  addRipple($("restoreBtn"));
+  addRipple($("rebootBtn"));
+
+  $("saveBtn").addEventListener("click", save);
+  $("restoreBtn").addEventListener("click", restore);
+  $("rebootBtn").addEventListener("click", function () {
+    shell("svc power reboot || reboot");
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

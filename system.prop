@@ -1,0 +1,2 @@
+# removing floating window restrictions removes this restriction by (re-)setting the following prop (via system.prop) does not enable for all apps as the blacklists are still in effect
+ro.vendor.feature.mfv_feature_windowreply_abroad=false

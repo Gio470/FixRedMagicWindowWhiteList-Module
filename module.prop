@@ -1,0 +1,6 @@
+id=windowreplyfix
+name=Fix RedMagic Window WhiteList
+version=2.1
+versionCode=6
+author=Gio
+description=Modifies the REDMAGIC floating window whitelist and provides a WebUI for adding, removing, and managing apps in forceSupport_whiteList.
