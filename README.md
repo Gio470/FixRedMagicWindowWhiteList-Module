@@ -32,6 +32,11 @@ system/etc/zte_windowReply_control.xml   Floating window whitelist
 webroot/index.html             WebUI for managing the whitelist
 ```
 
+## Requirements
+
+- RedMagic OS (tested on my Redmagic 10 Pro (NX789J) Android 16)
+- Root
+
 ## Disclaimer
 
 This module modifies system properties and a system whitelist file. It is
