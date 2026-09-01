@@ -1,4 +1,5 @@
 # Fix RedMagic Window WhiteList
+# FOR THE LSPOSED ALTERNATIVE, GO [HERE](https://github.com/Gio470/FixRedMagicWindow)
 
 A [Magisk](https://github.com/topjohnwu/Magisk)/KernelSU module that lifts the
 floating-window restriction on REDMAGIC (nubia/ZTE) devices and ships a WebUI
