@@ -37,12 +37,22 @@ webroot/index.html             WebUI for managing the whitelist
 - RedMagic OS (tested on my Redmagic 10 Pro (NX789J) Android 16)
 - Root
 
+## Credits
+
+https://xdaforums.com/t/magisk-mod-experimental-redmagic-addons.4677270/
+
+https://claude.ai
+
 ## Disclaimer
 
 This module modifies system properties and a system whitelist file. It is
 intended for REDMAGIC devices affected by the floating window
 region restriction. Use at your own risk. I am not responsible for
 any damage to your device.
+
+## Note
+
+I made this module for my personal use with the help of AI (I don't know how to code only in lua).
 
 ## License
 
